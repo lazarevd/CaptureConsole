@@ -5,6 +5,8 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <opencv2/highgui/highgui.hpp>
 
+#include "yolo_v2_class.hpp"    // imported functions from DLL
+
 using namespace std;
 using namespace cv;
 #include <iostream>
@@ -70,6 +72,7 @@ Mat hwnd2mat(HWND hwnd, int x, int y, int w, int h) {
 
 void main()
 {
+	init("yolov3-spp-copper.cfg", "yolov3-spp-copper_last.weights", 0);
 
 	HWND desk = GetDesktopWindow();
 	LPWSTR lpwstr = L"Test String";
@@ -81,6 +84,14 @@ void main()
 
 		Mat mat = hwnd2mat(desk, 0, 0, 320, 240);
 		imshow("Capture", mat);
-		waitKey(10); // need after imshow you can change wait time
+		waitKey(500); // need after imshow you can change wait time
+
+		int cont_size = 10;
+		bbox_t_container container;
+		detect_mat(mat.data, cont_size, container);
+		for (int i = 0; i < cont_size; i++) {
+			string setStr = to_string(container.candidates[i].x) + " " + to_string(container.candidates[i].y) + "\n";
+			cout << setStr;
+		}
 	}
 }
