@@ -76,22 +76,27 @@ void main()
 
 	HWND desk = GetDesktopWindow();
 	LPWSTR lpwstr = L"Test String";
+	
+	bbox_t_container container;
+	int result = detect_image("16.jpg", container);
+	string setStr = "result " + to_string(result) + "\n";
+	cout << setStr;
+	for (int i = 0; i < result; i++) {
+		string setStr = to_string(container.candidates[i].x) + " " + to_string(container.candidates[i].y) + "\n";
+		cout << setStr;
+	}
+	
 	while (desk != 0)
-	{/*
-		hwnd = GetWindow(hwnd, GW_CHILD);
-		GetWindowText(hwnd, lpwstr, 100);
-		wcout << lpwstr << endl;*/
-
+	{
 		Mat mat = hwnd2mat(desk, 0, 0, 320, 240);
 		imshow("Capture", mat);
-		waitKey(500); // need after imshow you can change wait time
-
-		int cont_size = 10;
+		waitKey(20); // need after imshow you can change wait time
 		bbox_t_container container;
-		detect_mat(mat.data, cont_size, container);
-		for (int i = 0; i < cont_size; i++) {
-			string setStr = to_string(container.candidates[i].x) + " " + to_string(container.candidates[i].y) + "\n";
+		int result = detect_matt(mat, container);
+		for (int i = 0; i < result; i++) {
+			string setStr = "obj: "+ to_string(container.candidates[i].obj_id) + " x: " +  to_string(container.candidates[i].x) + ", y: " + to_string(container.candidates[i].y) + "\n";
 			cout << setStr;
 		}
 	}
+	
 }
