@@ -1,0 +1,88 @@
+0. Установть MS Visual Studio 2015 (vc14)
+1. создать на c:/ папки:
+/darknet/
+/darknet/build
+2. сделать git clone https://github.com/AlexeyAB/darknet.git в папке /darknet/ и переименовать /darknet/darknet в darknet/source
+на данный момент 
+commit 40006b6e9b6d5ebf3a832b157b1ab168e80a84bb (HEAD -> master, origin/master, origin/HEAD)
+Author: AlexeyAB <alexeyab84@gmail.com>
+Date:   Wed Jan 8 02:26:55 2020 +0300
+3. скачать cmake 3.16.2, установить с переменной в PATH
+4. скачать с https://sourceforge.net/projects/opencvlibrary/files/opencv-win/3.4.3/ 
+opencv 3.4.3 для vs14 (2015).
+Распаковать в C:\opencv
+5. Запустить CMake-GUI
+C:/darknet/source
+C:/darknet/build
+для OPENCV_dir указать -  C:/opencv/build/x64/vc14/lib
+. Configure
+. Optional platform for generator (Set: x64)
+. Finish
+. Generate
+. Open Project
+. Set: x64 & Release (В студии Build - Configuration Manager - x64 и Release)
+. Build
+. Build solution
+
+6. Проект должен сбилдиться в C:\darknet\build\Release\darknet.exe
+7. скопировать dll из C:\darknet\source\3rdparty\pthreads\bin в C:\darknet\build\Release\
+8. скопирвоать C:\opencv\build\x64\vc15\bin\opencv_world343.dll в C:\darknet\build\Release\
+
+Запуск
+1. Скачать веса https://pjreddie.com/media/files/yolov3-spp.weights и конфиг https://raw.githubusercontent.com/AlexeyAB/darknet/master/cfg/yolov3-spp.cfg
+2. darknet detector test coco.data yolov3-tiny-prn.cfg yolov3-tiny-prn.weights
+
+
+---Компилляция dll
+1. Открыть \darknet-master\build\darknet\yolo_console_dll.sln
+2. Если будут ошибки с путем к файлам CUDA (CUDA 10.0.props и .target) открыть в нотпаде yolo_console_dll.vcxproj и вставить пути к нужным файлам:
+C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2\extras\visual_studio_integration\MSBuildExtensions\CUDA 10.2.props
+C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2\extras\visual_studio_integration\MSBuildExtensions\CUDA 10.2.target
+3. Затем может понадобиться рестартануть VS
+
+---Для добавления поддержки OPENCV
+1. добавить #define OPENCV в yolo_v2_class.hpp и yolo_v2_class.cpp в начале файлов.
+2. Свойства (alt+enter) -Linker-General-Addition Library Directories - путь к либам opencv, 
+C:\opencv\build\x64\vc14\lib - vc14 соотвествет 14 версии VisualStudio (2015).
+3. Linker-input-Additional Dependencies - добавить либы из C:\opencv\build\x64\vc14\lib.
+Например для opencv 3.4: opencv_world347.lib и opencv_world347d.lib
+
+#pragma warning(disable : 4996) //DISABLE WARNS - добавить в файл yolo_v2_class.hpp для того чтобы игнорировать ошибку c4996 (устаревшие методы)
+
+Пришлось добавить
+в yolo_v2_class.hpp
+extern "C" LIB_API int detect_matt(const cv::Mat mat, bbox_t_container &container); 
+и в yolo_v2_class.сpp 
+int detect_matt(const cv::Mat mat, bbox_t_container &container) {
+#ifdef OPENCV
+	std::vector<bbox_t> detection = detector->detect(mat);
+	cout << "detected: " + to_string(detection.size()) + "\n";
+	for (size_t i = 0; i < detection.size() && i < C_SHARP_MAX_OBJECTS; ++i)
+		container.candidates[i] = detection[i];
+	return detection.size();
+#else
+	return -1;
+#endif    // OPENCV
+}
+
+непонятно почему сразу так не сделано было
+
+
+Запуск darknet
+cd c:\ML\AlexeyAB_YOLOv3\Compiled\
+darknet.exe detector test cfg/coco.data cfg/yolov3-spp.cfg yolov3-spp.weights
+
+darknet detector train data/obj.data yolov3-spp-copper.cfg darknet53.conv.74
+nvidia-smi.exe -l 5
+darknet detector train data/obj.data yolov3-spp-copper.cfg backup\yolov3-spp-copper_last.weights
+darknet.exe detector test data/obj.data yolov3-spp-copper.cfg backup\yolov3-spp-copper_last.weights 
+
+yolo_console_dll.exe data/obj.names yolov3-spp-copper.cfg backup\yolov3-spp-copper_last.weights 
+
+------------------------------
+WIN приложение
+LNK2019 MSVCRT.lib
+Выставить в linker -> system -> subsystem
+Windows(/SUBSYSTEM:WINDOWS)
+
+
