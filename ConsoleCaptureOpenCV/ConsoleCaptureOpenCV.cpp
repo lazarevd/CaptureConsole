@@ -70,6 +70,20 @@ Mat hwnd2mat(HWND hwnd, int x, int y, int w, int h) {
 	return src;
 }
 
+void print_detection(Mat& mat, bbox_t bbox) {
+	Scalar color;
+	if (bbox.obj_id == 0) {
+		color = Scalar(0, 255, 0);
+	} 
+	else if (bbox.obj_id == 1) {
+		color = Scalar(255, 0, 0);
+	} 
+	else {
+		color = Scalar(0, 0, 255);
+	}
+	rectangle(mat, Point(bbox.x, bbox.y), Point(bbox.x+bbox.w, bbox.y+ bbox.h), color, 1, 0);
+}
+
 void main()
 {
 	init("yolov3-spp-copper.cfg", "yolov3-spp-copper_last.weights", 0);
@@ -85,18 +99,29 @@ void main()
 		string setStr = to_string(container.candidates[i].x) + " " + to_string(container.candidates[i].y) + "\n";
 		cout << setStr;
 	}
-	
+
 	while (desk != 0)
 	{
 		Mat mat = hwnd2mat(desk, 0, 0, 320, 240);
-		imshow("Capture", mat);
-		waitKey(20); // need after imshow you can change wait time
+		waitKey(50); // need after imshow you can change wait time
 		bbox_t_container container;
 		int result = detect_matt(mat, container);
+		if (result > 0) { cout << "\n"; }
 		for (int i = 0; i < result; i++) {
-			string setStr = "obj: "+ to_string(container.candidates[i].obj_id) + " x: " +  to_string(container.candidates[i].x) + ", y: " + to_string(container.candidates[i].y) + "\n";
-			cout << setStr;
+			if (container.candidates[i].prob > 0.5) {
+				print_detection(mat, container.candidates[i]);
+				string setStr = "obj: " 
+					+ to_string(container.candidates[i].obj_id) 
+					+ ", conf: " + to_string(container.candidates[i].prob)
+					+ ", x: " + to_string(container.candidates[i].x) 
+					+ ", y: " + to_string(container.candidates[i].y) 
+					+ ", w: " + to_string(container.candidates[i].w)
+					+ ", h: " + to_string(container.candidates[i].h)
+					+ "\n";
+				cout << setStr;
+			}
 		}
+		imshow("Capture", mat);
 	}
 	
 }
