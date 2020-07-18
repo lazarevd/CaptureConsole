@@ -100,8 +100,8 @@ void main()
 	for (int i = 0; i < result; i++) {
 		string setStr = to_string(container.candidates[i].x) + " " + to_string(container.candidates[i].y) + "\n";
 		cout << setStr;
-		*/
-	}
+		
+	}*/
 
 	while (desk != 0)
 	{
