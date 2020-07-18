@@ -29,8 +29,8 @@ Mat hwnd2mat(HWND hwnd, int x, int y, int w, int h) {
 
 	srcheight = windowsize.bottom;
 	srcwidth = windowsize.right;
-	height = windowsize.bottom / 2;  //change this to whatever size you want to resize to
-	width = windowsize.right / 2;
+	height = windowsize.bottom;  //change this to whatever size you want to resize to
+	width = windowsize.right;
 
 	src.create(height, width, CV_8UC4);
 
@@ -88,21 +88,25 @@ void main()
 {
 	init("yolov3-spp-copper.cfg", "yolov3-spp-copper_last.weights", 0);
 
+	cout << "inited";
+
 	HWND desk = GetDesktopWindow();
 	LPWSTR lpwstr = L"Test String";
 	
 	bbox_t_container container;
-	int result = detect_image("16.jpg", container);
+	/*int result = detect_image("16.jpg", container);
 	string setStr = "result " + to_string(result) + "\n";
 	cout << setStr;
 	for (int i = 0; i < result; i++) {
 		string setStr = to_string(container.candidates[i].x) + " " + to_string(container.candidates[i].y) + "\n";
 		cout << setStr;
+		*/
 	}
 
 	while (desk != 0)
 	{
-		Mat mat = hwnd2mat(desk, 0, 0, 320, 240);
+		cout << "start loop";
+		Mat mat = hwnd2mat(desk, 0, 0, 720, 576);
 		waitKey(50); // need after imshow you can change wait time
 		bbox_t_container container;
 		int result = detect_matt(mat, container);
